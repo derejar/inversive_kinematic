@@ -246,13 +246,13 @@ double calculateX(const double& angle1, const double& angle2, const double& angl
   return R*cos(degreesToRadians(angle3));
 }
 
-double calculateY(const double& angle1, const double& angle2, const double& angle3) //sin(a3)*(L1*cos(a1) + L2*cos(a2 + a1 - 180));
+double calculateY(const double& angle1, const double& angle2, const double& angle3)
 {
   double h = L1*sin(degreesToRadians(angle2));
   return h - L2*cos(degreesToRadians(angle1 - 90 + angle2));
 }
 
-double calculateZ(const double& angle1, const double& angle2, const double& angle3) //L1*sin(a1) + L2*sin(a2 + a1 - 180)
+double calculateZ(const double& angle1, const double& angle2, const double& angle3)
 {
   double R = L1*cos(degreesToRadians(angle2)) + L2*sin(degreesToRadians(angle1 - 90 + angle2));
   return R*sin(degreesToRadians(angle3));
@@ -299,13 +299,6 @@ void calculateInverseKinematics(long& steps1, long& steps2, long& steps3, const 
     steps3 = (thirdAngle - angle3) / thirdAnglePerStep * -1;
   else
     steps3 = (angle3 - thirdAngle) / thirdAnglePerStep * 1;
-//
-//  Serial.print("steps1: ");
-//  Serial.print(steps1);
-//  Serial.print("; steps2: ");
-//  Serial.print(steps2);
-//  Serial.print("; steps3: ");
-//  Serial.println(steps3);
 }
 
 double calculateFirstAngle(const double& x, const double& y, const double& z)
