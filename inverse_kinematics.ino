@@ -114,7 +114,7 @@ void doStep(const bool (&modes)[4])
   digitalWrite(THIRD_MOTOR_IN4_PIN, modes[3]); 
 }
 
-bool step()
+void step()
 {
   int current = actions[dir ? action : action ^ 0b11];
   bool modes[4];
@@ -139,7 +139,6 @@ bool step()
       coefficient = -1;
     configureTimer();
   }
-  return steps;
 }
 
 void setSteps(long msteps = 0, bool mdir = CW, double mspeed = 50.0, double mmaxSpeed = 200.0, int maccel = 50)
@@ -188,16 +187,18 @@ void configureThirdMotor()
   pinMode(THIRD_MOTOR_IN4_PIN, 1);
 }
 
-const int maxFirstLength = 4400;
-const int maxSecondLength = 1600;
-const int maxThirdLength = 300;
+//Нумерация моторов производится следующим образом: мотор, находящийся выше всех - первый мотор, средний - второй мотор.
+// Мотор, вращающий манипулятор по окружности - третий мотор.
+const int maxFirstLength = 4400; //Максимальный путь, который может пройти первый мотор (в шагах мотора)
+const int maxSecondLength = 1600; //Максимальный путь, который может пройти второй мотор (в шагах мотора)
+const int maxThirdLength = 300; //Максимальный путь, который может пройти третий мотор (в шагах мотора)
 
-const double minFirstAngle = 55.0;
-const double maxFirstAngle = 125.0;
-const double minSecondAngle = 20.0;
-const double maxSecondAngle = 60.0;
-const double minThirdAngle = 0.0;
-const double maxThirdAngle = 70.0;
+const double minFirstAngle = 55.0; //Минимальный возможный угол второго плеча манипулятора относительно первого плеча
+const double maxFirstAngle = 125.0; //Максимально возможный угол второго плеча манипулятора относительно первого плеча
+const double minSecondAngle = 20.0; //Минимально возможный угол первого плеча относительно прямой параллельной полу
+const double maxSecondAngle = 60.0; //Максимально возможный угол первого плеча относительно прямой параллельной полу
+const double minThirdAngle = 0.0; //Минимально возможный угол поворота робота по окружности
+const double maxThirdAngle = 70.0; //Максимальный возможный угол поворота робота по окружности
 
 
 const double firstAngleDiff = maxFirstAngle - minFirstAngle;
@@ -217,14 +218,14 @@ double radiansToDegrees(const double& r)
   return r * 180.0 / pi; 
 }
 
+double firstAngle = maxFirstAngle;
+double secondAngle = maxSecondAngle;
+double thirdAngle = minThirdAngle;
 
-double firstAngle = 125.0;
-double secondAngle = 60.0;
-double thirdAngle = 0.0;
-
-long firstLength = 4400;
-long secondLength = 1600;
-long thirdLength = 0;
+//Начальные значения, в каком месте пути находится клешня в начальный момент 
+long firstLength = maxFirstLength;
+long secondLength = maxSecondLength;
+long thirdLength = 0.0;
 
 const double firstAnglePerStep = double(firstAngleDiff) / maxFirstLength;
 const double secondAnglePerStep = double(secondAngleDiff) / maxSecondLength;
@@ -237,8 +238,8 @@ void calculateCoords(double& x, double& y, double& z)
   z = calculateZ(firstAngle, secondAngle, thirdAngle);
 }
 
-long L1 = 370;
-long L2 = 440;
+const long L1 = 370;
+const long L2 = 440;
 
 double calculateX(const double& angle1, const double& angle2, const double& angle3)
 {
@@ -273,17 +274,9 @@ void inverseKinematics(const double& x, const double& y, const double& z)
 
 void calculateInverseKinematics(long& steps1, long& steps2, long& steps3, const double& x, const double& y, const double& z)
 {
-
   double angle1 = calculateFirstAngle(x, y, z);
   double angle2 = calculateSecondAngle(x, y, z);
   double angle3 = calculateThirdAngle(x, y, z);
-
-  Serial.print("angle1: ");
-  Serial.print(angle1);
-  Serial.print("; angle2: ");
-  Serial.print(angle2);
-  Serial.print("; angle3: ");
-  Serial.println(angle3);
 
   if(firstAngle > angle1)
     steps1 = (firstAngle - angle1) / firstAnglePerStep * -4;
@@ -389,7 +382,6 @@ void goBack()
 void loop() {
   if(Serial.available())
   {
-    long a, b, c;
     char input = Serial.read();
     switch(input)
     {
